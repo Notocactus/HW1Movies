@@ -3,8 +3,8 @@ class System() {
         return 0u
     }
 
-    fun addMovie(name: String, duration: UInt){
-
+    fun addMovie(name: String, duration: UInt) : String {
+        return("")
     }
 
     fun editMovie(name: String){
@@ -27,17 +27,16 @@ class System() {
 
     }
 
-    fun sellTicket(date: String, place: UInt){
-        println("eeee boiiiii")
-
+    fun sellTicket(date: String, place: UInt) : String {
+        return("")
     }
 
-    fun returnTiclet(ticketId: UInt){
-
+    fun returnTicket(ticketId: UInt) : String {
+        return("")
     }
 
-    fun tagVisitor(ticketId: UInt){
-
+    fun tagVisitor(ticketId: UInt) : String {
+        return ("")
     }
 
     fun showPlaces(date: String){
