@@ -5,6 +5,7 @@ import files
 import menu
 import java.io.File
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
 
 
 fun isDateValid(date: String?): Boolean {
@@ -53,6 +54,8 @@ fun main() {
 
     var command : String = ""
     while (true) {
+        system.clearSessions(LocalDateTime.now())
+
         println(menu)
         command = readln()
         when (command) {
@@ -65,6 +68,7 @@ fun main() {
                     println("Пожалуйста введите корректную дату: ")
                     sessionDate = readln()
                 }
+
                 println("Введите номер места")
                 var place : String = readln()
                 var placeNum : UInt
@@ -118,13 +122,85 @@ fun main() {
             }
 
             "5" -> {
-                println("Введите название фильма, которое хотите изменить: ")
+                println("Введите название фильма, который хотите изменить: ")
                 var movieName : String = readln()
                 println(system.editMovie(movieName))
             }
 
+            "6" -> {
+                println("Введите название фильма, который хотите удалить: ")
+                var movieName : String = readln()
+                println(system.removeMovie(movieName))
+            }
+
+            "7" -> {
+                println("Введите название фильма: ")
+                var movieName : String = readln()
+                println("Введите дату и время сеанса (DD/MM/YYYY HH:MM): ")
+                var sessionDate : String = readln()
+                while (!isDateValid(sessionDate)) {
+                    println("Пожалуйста введите корректную дату: ")
+                    sessionDate = readln()
+                }
+                println(system.addSession(movieName, sessionDate))
+            }
+
+            "8" -> {
+                println("Введите дату и время (DD/MM/YYYY HH:MM) сеанса, который вы хотите изменить: ")
+                var sessionDate : String = readln()
+                while (!isDateValid(sessionDate)) {
+                    println("Пожалуйста введите корректную дату: ")
+                    sessionDate = readln()
+                }
+                println(system.editSession(sessionDate))
+            }
+
+            "9" -> {
+                println("Введите дату и время (DD/MM/YYYY HH:MM) сеанса, который вы хотите удалить: ")
+                var sessionDate : String = readln()
+                while (!isDateValid(sessionDate)) {
+                    println("Пожалуйста введите корректную дату: ")
+                    sessionDate = readln()
+                }
+                println(system.removeSession(sessionDate))
+            }
+
+            "10" -> {
+                println("Введите дату и время (DD/MM/YYYY HH:MM) сеанса, места которого вы хотите посмотреть: ")
+                var sessionDate : String = readln()
+                while (!isDateValid(sessionDate)) {
+                    println("Пожалуйста введите корректную дату: ")
+                    sessionDate = readln()
+                }
+                println(system.showPlaces(sessionDate))
+            }
+
+            "11" -> {
+                println("Введите название фильма: ")
+                var movieName : String = readln()
+                println(system.showSessionsByName(movieName))
+            }
+
+            "12" -> {
+                println("Введите дату и время (DD/MM/YYYY HH:MM): ")
+                var sessionDate : String = readln()
+                while (!isDateValid(sessionDate)) {
+                    println("Пожалуйста введите корректную дату: ")
+                    sessionDate = readln()
+                }
+                println(system.showSessionsByDate(sessionDate))
+            }
+
+            "13" -> {
+                println("Полный список фильмов: ")
+                println(system.showMovies())
+            }
+
             else -> {
-                println("Введена неверная команда. Пожалуйста, выберите одну из представленных вариантов. ")
+                println("\nВведена неверная команда. Пожалуйста, выберите одну из представленных вариантов. " +
+                        "\nНажмите Enter чтобы вернуться к меню. ")
+                readln()
+//                Thread.sleep(750)
             }
         }
     }

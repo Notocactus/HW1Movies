@@ -6,7 +6,7 @@ val ticketsFile = "C:\\Users\\Cactus\\IdeaProjects\\HW1Movies\\src\\main\\resour
 
 var files = arrayOf(moviesFile, sessionsFile, ticketsFile)
 
-val menu = "\nСписок команд: \n" +
+val menu = "Список команд: \n" +
         "1) Продать билет \n" +
         "2) Возврат билета \n" +
         "3) Отметить посещение \n" +
