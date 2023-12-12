@@ -1,8 +1,8 @@
-import kotlinx.serialization.json.Json
+
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.io.File
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class System() {
     private var countOfCreatedObjects: Int = 0
@@ -55,7 +55,7 @@ class System() {
         return ("\nТакого сеанса не существует. Воспользуйтесь функцией ещё раз с существующим сеансом")
     }
 
-    fun returnTiclet(ticketId: UInt){
+    fun returnTicket(ticketId: UInt){
 
     }
 
