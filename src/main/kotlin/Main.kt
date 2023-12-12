@@ -117,6 +117,12 @@ fun main() {
                 println(system.addMovie(movieName, duration))
             }
 
+            "5" -> {
+                println("Введите название фильма, которое хотите изменить: ")
+                var movieName : String = readln()
+                println(system.editMovie(movieName))
+            }
+
             else -> {
                 println("Введена неверная команда. Пожалуйста, выберите одну из представленных вариантов. ")
             }

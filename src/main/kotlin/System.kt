@@ -14,28 +14,28 @@ class System() {
 
     }
 
-    fun addMovie(name: String, duration: UInt){
-
+    fun addMovie(name: String, duration: UInt) : String {
+        return ("")
     }
 
-    fun editMovie(name: String){
-
+    fun editMovie(name: String) : String {
+        return ("")
     }
 
-    fun removeMovie(name: String) {
-
+    fun removeMovie(name: String) : String {
+        return ("")
     }
 
-    fun addSession(movieName: String, date: String){
-
+    fun addSession(movieName: String, date: String) : String {
+        return ("")
     }
 
-    fun editSession(date: String){
-
+    fun editSession(date: String) : String {
+        return ("")
     }
 
-    fun removeSession(date: String){
-
+    fun removeSession(date: String) : String {
+        return ("")
     }
 
     fun sellTicket(date: String, place: UInt): String{
@@ -47,37 +47,37 @@ class System() {
                     var tickets = Json.decodeFromString<Array<Ticket>>(File(ticketsFile).readText(Charsets.UTF_8))
                     tickets += (Ticket(generateId(), session.id, session.cost, place, date))
                     File(ticketsFile).writeText(Json.encodeToString<Array<Ticket>>(tickets))
-                    return "\nБилет куплен"
+                    return ("Билет куплен")
                 }
                 else{
-                    return "\nМесто занято, выберите новое"
+                    return "Место занято, выберите новое"
                 }
             }
         }
-        return ("\nТакого сеанса не существует. Воспользуйтесь функцией ещё раз с существующим сеансом")
+        return ("Такого сеанса не существует. Воспользуйтесь функцией ещё раз с существующим сеансом")
     }
 
-    fun returnTicket(ticketId: UInt){
-
+    fun returnTicket(ticketId: UInt) : String {
+        return ("")
     }
 
-    fun tagVisitor(ticketId: UInt){
-
+    fun tagVisitor(ticketId: UInt) : String {
+        return ("")
     }
 
-    fun showPlaces(date: String){
-
+    fun showPlaces(date: String) : String {
+        return ("")
     }
 
-    fun showSessionsByName(movieName: String){
-
+    fun showSessionsByName(movieName: String) : String {
+        return ("")
     }
 
-    fun showSessionsByDate(date: String){
-
+    fun showSessionsByDate(date: String) : String {
+        return ("")
     }
 
-    fun showMovies(){
-
+    fun showMovies() : String {
+        return ("")
     }
 }
