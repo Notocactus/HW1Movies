@@ -8,6 +8,8 @@ class System() {
     private var countOfCreatedObjects: Int = 0
     private fun generateId(): UInt{
         return (LocalDateTime.now().year.toString() + LocalDateTime.now().month.toString() +
+                LocalDateTime.now().hour.toString() + LocalDateTime.now().minute.toString() +
+                LocalDateTime.now().second.toString() +
                 LocalDateTime.now().dayOfMonth.toString() + (countOfCreatedObjects++).toString()).toUInt()
 
     }
