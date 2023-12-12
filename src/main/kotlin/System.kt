@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter
 class System() {
     private var countOfCreatedObjects: Int = 0
 
-    private fun clearSessions(){
+    fun clearSessions(localDateTime: LocalDateTime){
 
     }
     private fun generateId(): UInt{
