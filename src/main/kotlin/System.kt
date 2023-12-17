@@ -2,8 +2,10 @@
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
+import java.sql.Date
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 class System() {
     private var countOfCreatedObjects: Int = 0
@@ -20,22 +22,63 @@ class System() {
     }
 
     fun addMovie(name: String, duration: UInt) : String {
-        return ("")
+        var movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
+        for (movie in movies){
+            if (movie.name.lowercase(Locale.getDefault()) == name.lowercase(Locale.getDefault())){
+                return ("Такой фильм уже существует! Добавление отменено.")
+            }
+        }
+        movies += (Movie(generateId(), name, duration))
+        File(moviesFile).writeText(Json.encodeToString<Array<Movie>>(movies))
+        return "Фильм успешно добавлен."
     }
 
-    fun editMovie(name: String) : String {
-        return ("")
+    fun editMovieName(movieName: String, newName: String) : String {
+        val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
+        for (movie in movies){
+            if (movie.name.lowercase(Locale.getDefault()) == movieName.lowercase(Locale.getDefault())){
+                movie.name = newName
+                File(moviesFile).writeText(Json.encodeToString<Array<Movie>>(movies))
+                return "Название фильма успешно изменено."
+            }
+        }
+        return "Фильма с таким названием не существует!"
+    }
+
+    fun editMovieDuration(movieName: String, duration: UInt): String{
+        val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
+        for (movie in movies){
+            if (movie.name.lowercase(Locale.getDefault()) == movieName.lowercase(Locale.getDefault())){
+                movie.duration = duration
+                File(moviesFile).writeText(Json.encodeToString<Array<Movie>>(movies))
+                return "Продолжительность фильма успешно изменена"
+            }
+        }
+        return "Фильма с таким названием не существует!"
     }
 
     fun removeMovie(name: String) : String {
-        return ("")
+        val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8)).toMutableList()
+        for (movie in movies){
+            if (movie.name.lowercase(Locale.getDefault()) == name.lowercase(Locale.getDefault())){
+                movies -= movie
+                val moviesArr = movies.toTypedArray()
+                File(moviesFile).writeText(Json.encodeToString<Array<Movie>>(moviesArr))
+                return "Фильм успешно удалён из списка"
+            }
+        }
+        return "Фильма с таким названием не существует!"
     }
 
     fun addSession(movieName: String, date: String) : String {
         return ("")
     }
 
-    fun editSession(date: String) : String {
+    fun editSessionDate(date: String, newDate: String) : String {
+        return ("")
+    }
+
+    fun editSessionCost(date: String, newCost: UInt) : String {
         return ("")
     }
 
@@ -124,6 +167,13 @@ class System() {
     }
 
     fun showMovies() : String {
-        return ("")
+        var moviesString: String = ""
+        val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
+        var count: Int = 1
+        for (movie in movies){
+            moviesString += ("${count}. ${movie.name}. Продолжительность показа: ${movie.duration / 60u}: ${movie.duration - movie.duration / 60u * 60u}\n" )
+            count += 1
+        }
+        return moviesString
     }
 }
