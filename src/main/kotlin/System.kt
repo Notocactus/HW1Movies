@@ -2,7 +2,6 @@
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
-import java.sql.Date
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -13,65 +12,112 @@ class System() {
     fun clearSessions(localDateTime: LocalDateTime){
 
     }
-    private fun generateId(): UInt{
-        return (LocalDateTime.now().year.toString() + LocalDateTime.now().month.toString() +
+    private fun generateId(): String {
+        return (LocalDateTime.now().year.toString() + LocalDateTime.now().monthValue.toString() +
                 LocalDateTime.now().hour.toString() + LocalDateTime.now().minute.toString() +
                 LocalDateTime.now().second.toString() +
-                LocalDateTime.now().dayOfMonth.toString() + (countOfCreatedObjects++).toString()).toUInt()
+                LocalDateTime.now().dayOfMonth.toString() + (countOfCreatedObjects++).toString())
 
     }
 
-    fun addMovie(name: String, duration: UInt) : String {
-        var movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
-        for (movie in movies){
-            if (movie.name.lowercase(Locale.getDefault()) == name.lowercase(Locale.getDefault())){
-                return ("Такой фильм уже существует! Добавление отменено.")
+    fun findMovie(name: String) : String {
+        var movies: Array<Movie>
+        if (File(moviesFile).exists()){
+            movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
+            for (movie in movies){
+                if (movie.name.lowercase(Locale.getDefault()) == name.lowercase(Locale.getDefault())){
+                    return movie.id
+                }
             }
         }
-        movies += (Movie(generateId(), name, duration))
+        return ""
+    }
+
+    fun addMovie(name: String, duration: UInt) : String {
+        var movies: Array<Movie>
+        if (File(moviesFile).exists()){
+            movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
+            for (movie in movies){
+                if (movie.name.lowercase(Locale.getDefault()) == name.lowercase(Locale.getDefault())){
+                    return ("Такой фильм уже существует! Добавление отменено.")
+                }
+            }
+            movies += (Movie(generateId(), name, duration))
+        }
+        else{
+            var file = File(moviesFile)
+            file.createNewFile()
+            movies = arrayOf(Movie(generateId(), name, duration))
+        }
         File(moviesFile).writeText(Json.encodeToString<Array<Movie>>(movies))
         return "Фильм успешно добавлен."
     }
 
-    fun editMovieName(movieName: String, newName: String) : String {
-        val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
-        for (movie in movies){
-            if (movie.name.lowercase(Locale.getDefault()) == movieName.lowercase(Locale.getDefault())){
-                movie.name = newName
-                File(moviesFile).writeText(Json.encodeToString<Array<Movie>>(movies))
-                return "Название фильма успешно изменено."
+    fun editMovie(movieName: String, newName: String) : String {
+        if (File(moviesFile).exists()) {
+            val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
+            for (movie in movies){
+                if (movie.name.lowercase(Locale.getDefault()) == movieName.lowercase(Locale.getDefault())){
+                    movie.name = newName
+                    File(moviesFile).writeText(Json.encodeToString<Array<Movie>>(movies))
+                    return "Название фильма успешно изменено."
+                }
             }
         }
         return "Фильма с таким названием не существует!"
     }
 
-    fun editMovieDuration(movieName: String, duration: UInt): String{
-        val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
-        for (movie in movies){
-            if (movie.name.lowercase(Locale.getDefault()) == movieName.lowercase(Locale.getDefault())){
-                movie.duration = duration
-                File(moviesFile).writeText(Json.encodeToString<Array<Movie>>(movies))
-                return "Продолжительность фильма успешно изменена"
+    fun editMovie(movieName: String, duration: UInt): String{
+        if (File(moviesFile).exists()) {
+            val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
+            for (movie in movies){
+                if (movie.name.lowercase(Locale.getDefault()) == movieName.lowercase(Locale.getDefault())){
+                    movie.duration = duration
+                    File(moviesFile).writeText(Json.encodeToString<Array<Movie>>(movies))
+                    return "Продолжительность фильма успешно изменена"
+                }
             }
         }
         return "Фильма с таким названием не существует!"
     }
 
     fun removeMovie(name: String) : String {
-        val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8)).toMutableList()
-        for (movie in movies){
-            if (movie.name.lowercase(Locale.getDefault()) == name.lowercase(Locale.getDefault())){
-                movies -= movie
-                val moviesArr = movies.toTypedArray()
-                File(moviesFile).writeText(Json.encodeToString<Array<Movie>>(moviesArr))
-                return "Фильм успешно удалён из списка"
+        if (File(moviesFile).exists()) {
+            val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8)).toMutableList()
+            for (movie in movies){
+                if (movie.name.lowercase(Locale.getDefault()) == name.lowercase(Locale.getDefault())){
+                    movies -= movie
+                    val moviesArr = movies.toTypedArray()
+                    File(moviesFile).writeText(Json.encodeToString<Array<Movie>>(moviesArr))
+                    return "Фильм успешно удалён из списка"
+                }
             }
         }
         return "Фильма с таким названием не существует!"
     }
 
-    fun addSession(movieName: String, date: String) : String {
-        return ("")
+    fun addSession(movieName: String, date: String, cost: UInt) : String {
+        val currMovieId = findMovie(movieName)
+        if (currMovieId == "") {
+            return ("В каталоге нет такого фильма.")
+        }
+        var sessions : Array<Session>
+        if (File(sessionsFile).exists()) {
+            sessions = Json.decodeFromString<Array<Session>>(File(moviesFile).readText(Charsets.UTF_8))
+            for (session in sessions){
+                if (session.date == date){
+                    return ("Это время уже занято.")
+                }
+            }
+            sessions += (Session(generateId(), currMovieId, date, cost))
+        }
+        else {
+            var file = File(sessionsFile)
+            file.createNewFile()
+            sessions = arrayOf(Session(generateId(), currMovieId, date, cost))
+        }
+        File(moviesFile).writeText(Json.encodeToString<Array<Session>>(sessions))
+        return "Сеанс успешно добавлен."
     }
 
     fun editSessionDate(date: String, newDate: String) : String {
@@ -105,7 +151,7 @@ class System() {
         return ("Такого сеанса не существует. Воспользуйтесь функцией ещё раз с существующим сеансом")
     }
 
-    fun returnTicket(ticketId: UInt) : String {
+    fun returnTicket(ticketId: String) : String {
         val tickets = Json.decodeFromString<Array<Ticket>>(File(ticketsFile).readText(Charsets.UTF_8)).toMutableList()
         for (ticket in tickets){
             if (ticket.id == ticketId){
@@ -118,7 +164,7 @@ class System() {
         return ("Билета с данным ID не существует, повторите попытку с корректным билетом")
     }
 
-    fun tagVisitor(ticketId: UInt) : String {
+    fun tagVisitor(ticketId: String) : String {
         val tickets = Json.decodeFromString<Array<Ticket>>(File(ticketsFile).readText(Charsets.UTF_8))
         for (ticket in tickets){
             if (ticket.id == ticketId){

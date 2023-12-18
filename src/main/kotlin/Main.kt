@@ -1,7 +1,6 @@
 package org.example
 
 import System
-import files
 import menu
 import java.io.File
 import java.text.SimpleDateFormat
@@ -48,7 +47,7 @@ fun CheckCreate(files: Array<String>) {
 
 fun main() {
 
-    CheckCreate(files)
+//    CheckCreate(files)
 
     val system: System = System()
 
@@ -93,7 +92,7 @@ fun main() {
                     println("Введите корректное id: ")
                     input = readln()
                 }
-                var ticketId : UInt = input.toUInt()
+                var ticketId = input
                 println(system.returnTicket(ticketId))
             }
 
@@ -104,7 +103,7 @@ fun main() {
                     println("Введите корректное id: ")
                     input = readln()
                 }
-                var ticketId : UInt = input.toUInt()
+                var ticketId = input
                 println(system.tagVisitor(ticketId))
             }
 
@@ -124,16 +123,31 @@ fun main() {
             "5" -> {
                 println("Введите название фильма, который хотите изменить: ")
                 var movieName : String = readln()
-                println(system.editMovie(movieName))
+                println("Введите новое название фильма: ")
+                var newName = readln()
+                println(system.editMovie(movieName, newName))
             }
 
             "6" -> {
+                println("Введите название фильма, который хотите изменить: ")
+                var movieName : String = readln()
+                println("Введите новую длительность фильма: ")
+                var input = readln()
+                while (!isDurationValid(input) && !isUInt(input)) {
+                    println("Введите корректную длительность фильма (в минутах или в формате HH:mm): ")
+                    input = readln()
+                }
+                val newDur = input.toUInt()
+                println(system.editMovie(movieName, newDur))
+            }
+
+            "7" -> {
                 println("Введите название фильма, который хотите удалить: ")
                 var movieName : String = readln()
                 println(system.removeMovie(movieName))
             }
 
-            "7" -> {
+            "8" -> {
                 println("Введите название фильма: ")
                 var movieName : String = readln()
                 println("Введите дату и время сеанса (DD/MM/YYYY HH:MM): ")
@@ -142,20 +156,37 @@ fun main() {
                     println("Пожалуйста введите корректную дату: ")
                     sessionDate = readln()
                 }
-                println(system.addSession(movieName, sessionDate))
-            }
-
-            "8" -> {
-                println("Введите дату и время (DD/MM/YYYY HH:MM) сеанса, который вы хотите изменить: ")
-                var sessionDate : String = readln()
-                while (!isDateValid(sessionDate)) {
-                    println("Пожалуйста введите корректную дату: ")
-                    sessionDate = readln()
+                println("Введите цену билета на сеанс: ")
+                var input = readln()
+                while (!isUInt(input)) {
+                    println("Введите верную цену: ")
+                    input = readln()
                 }
-                println(system.editSession(sessionDate))
+                val cost = input.toUInt()
+                println(system.addSession(movieName, sessionDate, cost))
             }
 
-            "9" -> {
+//            "9" -> {
+//                println("Введите дату и время (DD/MM/YYYY HH:MM) сеанса, который вы хотите изменить: ")
+//                var sessionDate : String = readln()
+//                while (!isDateValid(sessionDate)) {
+//                    println("Пожалуйста введите корректную дату: ")
+//                    sessionDate = readln()
+//                }
+//                println(system.editSession(sessionDate))
+//            }
+
+            //            "9" -> {
+//                println("Введите дату и время (DD/MM/YYYY HH:MM) сеанса, который вы хотите изменить: ")
+//                var sessionDate : String = readln()
+//                while (!isDateValid(sessionDate)) {
+//                    println("Пожалуйста введите корректную дату: ")
+//                    sessionDate = readln()
+//                }
+//                println(system.editSession(sessionDate))
+//            }
+
+            "11" -> {
                 println("Введите дату и время (DD/MM/YYYY HH:MM) сеанса, который вы хотите удалить: ")
                 var sessionDate : String = readln()
                 while (!isDateValid(sessionDate)) {
@@ -165,7 +196,7 @@ fun main() {
                 println(system.removeSession(sessionDate))
             }
 
-            "10" -> {
+            "12" -> {
                 println("Введите дату и время (DD/MM/YYYY HH:MM) сеанса, места которого вы хотите посмотреть: ")
                 var sessionDate : String = readln()
                 while (!isDateValid(sessionDate)) {
@@ -175,13 +206,13 @@ fun main() {
                 println(system.showPlaces(sessionDate))
             }
 
-            "11" -> {
+            "13" -> {
                 println("Введите название фильма: ")
                 var movieName : String = readln()
                 println(system.showSessionsByName(movieName))
             }
 
-            "12" -> {
+            "14" -> {
                 println("Введите дату и время (DD/MM/YYYY HH:MM): ")
                 var sessionDate : String = readln()
                 while (!isDateValid(sessionDate)) {
@@ -191,7 +222,7 @@ fun main() {
                 println(system.showSessionsByDate(sessionDate))
             }
 
-            "13" -> {
+            "15" -> {
                 println("Полный список фильмов: ")
                 println(system.showMovies())
             }
