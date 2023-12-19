@@ -163,7 +163,7 @@ class System() {
         return "Сеанса с такой датой не существует!"
     }
 
-    fun sellTicket(date: String, place: UInt): String{ // Надо исправить работу с файлом 
+    fun sellTicket(date: String, place: UInt): String{ // Надо исправить работу с файлом
         val sessions = Json.decodeFromString<Array<Session>>(File(sessionsFile).readText(Charsets.UTF_8))
         for (session in sessions){
             if (session.date == date){
