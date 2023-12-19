@@ -110,10 +110,10 @@ fun main() {
             "4" -> {
                 println("Введите название фильма: ")
                 var movieName : String = readln()
-                println("Введите длительность фильма (в минутах или в формате HH:mm): ")
+                println("Введите длительность фильма в минутах: ")
                 var input : String = readln()
-                while (!isDurationValid(input) && !isUInt(input)) {
-                    println("Введите корректную длительность фильма (в минутах или в формате HH:mm): ")
+                while (!isUInt(input)) {
+                    println("Введите корректную длительность фильма в минутах: ")
                     input = readln()
                 }
                 var duration : UInt = input.toUInt()
@@ -134,7 +134,7 @@ fun main() {
                 println("Введите новую длительность фильма: ")
                 var input = readln()
                 while (!isDurationValid(input) && !isUInt(input)) {
-                    println("Введите корректную длительность фильма (в минутах или в формате HH:mm): ")
+                    println("Введите корректную длительность фильма в минутах: ")
                     input = readln()
                 }
                 val newDur = input.toUInt()
@@ -166,25 +166,37 @@ fun main() {
                 println(system.addSession(movieName, sessionDate, cost))
             }
 
-//            "9" -> {
-//                println("Введите дату и время (DD/MM/YYYY HH:MM) сеанса, который вы хотите изменить: ")
-//                var sessionDate : String = readln()
-//                while (!isDateValid(sessionDate)) {
-//                    println("Пожалуйста введите корректную дату: ")
-//                    sessionDate = readln()
-//                }
-//                println(system.editSession(sessionDate))
-//            }
+            "9" -> {
+                println("Введите дату и время (DD/MM/YYYY HH:MM) сеанса, который вы хотите изменить: ")
+                var sessionDate : String = readln()
+                while (!isDateValid(sessionDate)) {
+                    println("Пожалуйста введите корректную дату: ")
+                    sessionDate = readln()
+                }
+                println("Введите новую дату и время (DD/MM/YYYY HH:MM) сеанса: ")
+                var newDate : String = readln()
+                while (!isDateValid(newDate)) {
+                    println("Пожалуйста введите корректную дату: ")
+                    newDate = readln()
+                }
+                println(system.editSessionDate(sessionDate, newDate))
+            }
 
-            //            "9" -> {
-//                println("Введите дату и время (DD/MM/YYYY HH:MM) сеанса, который вы хотите изменить: ")
-//                var sessionDate : String = readln()
-//                while (!isDateValid(sessionDate)) {
-//                    println("Пожалуйста введите корректную дату: ")
-//                    sessionDate = readln()
-//                }
-//                println(system.editSession(sessionDate))
-//            }
+            "10" -> {
+                println("Введите дату и время (DD/MM/YYYY HH:MM) сеанса, который вы хотите изменить: ")
+                var sessionDate : String = readln()
+                while (!isDateValid(sessionDate)) {
+                    println("Пожалуйста введите корректную дату: ")
+                    sessionDate = readln()
+                }
+                var input = readln()
+                while (!isUInt(input)) {
+                    println("Введите верную цену: ")
+                    input = readln()
+                }
+                val cost = input.toUInt()
+                println(system.editSessionCost(sessionDate, cost))
+            }
 
             "11" -> {
                 println("Введите дату и время (DD/MM/YYYY HH:MM) сеанса, который вы хотите удалить: ")
