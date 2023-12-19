@@ -6,11 +6,32 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-class System() {
+class System {
     private var countOfCreatedObjects: Int = 0
 
     fun clearSessions(localDateTime: LocalDateTime){
-
+        if (File(sessionsFile).exists()){
+            var isChanged = false
+            val sessions = Json.decodeFromString<Array<Session>>(File(sessionsFile).readText(Charsets.UTF_8)).toMutableList()
+            for (session in sessions){
+                val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
+                for (movie in movies){
+                    if (movie.id == session.movieId){
+                        val endOfTheMovie = LocalDateTime.parse(session.date, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")).plusHours(
+                            (movie.duration / 60u).toLong()).plusMinutes((movie.duration - movie.duration / 60u).toLong())
+                        if (localDateTime > endOfTheMovie){
+                            sessions -= session
+                            isChanged = true
+                        }
+                        break
+                    }
+                }
+            }
+            if (isChanged){
+                val sessionsArr = sessions.toTypedArray()
+                File(sessionsFile).writeText(Json.encodeToString<Array<Session>>(sessionsArr))
+            }
+        }
     }
     private fun generateId(): String {
         return (LocalDateTime.now().year.toString() + LocalDateTime.now().monthValue.toString() +
@@ -20,8 +41,8 @@ class System() {
 
     }
 
-    fun findMovie(name: String) : String {
-        var movies: Array<Movie>
+    private fun findMovie(name: String) : String {
+        val movies: Array<Movie>
         if (File(moviesFile).exists()){
             movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
             for (movie in movies){
@@ -45,7 +66,7 @@ class System() {
             movies += (Movie(generateId(), name, duration))
         }
         else{
-            var file = File(moviesFile)
+            val file = File(moviesFile)
             file.createNewFile()
             movies = arrayOf(Movie(generateId(), name, duration))
         }
@@ -105,14 +126,24 @@ class System() {
         if (File(sessionsFile).exists()) {
             sessions = Json.decodeFromString<Array<Session>>(File(moviesFile).readText(Charsets.UTF_8))
             for (session in sessions){
-                if (session.date == date){
-                    return ("Это время уже занято.")
+                val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
+                for (movie in movies){
+                    if (movie.id == session.movieId){
+                        val dateToLocalDateTime = LocalDateTime.parse(date, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                        val startOfTheMovie = LocalDateTime.parse(session.date, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                        val endOfTheMovie = startOfTheMovie.plusHours(
+                            (movie.duration / 60u).toLong()).plusMinutes((movie.duration - movie.duration / 60u).toLong())
+                        if (dateToLocalDateTime >= startOfTheMovie &&
+                            dateToLocalDateTime <= endOfTheMovie.plusMinutes(15L)){
+                            return "Это время уже занято."
+                        }
+                    }
                 }
             }
             sessions += (Session(generateId(), currMovieId, date, cost))
         }
         else {
-            var file = File(sessionsFile)
+            val file = File(sessionsFile)
             file.createNewFile()
             sessions = arrayOf(Session(generateId(), currMovieId, date, cost))
         }
@@ -164,64 +195,81 @@ class System() {
     }
 
     fun sellTicket(date: String, place: UInt): String{ // Надо исправить работу с файлом
-        val sessions = Json.decodeFromString<Array<Session>>(File(sessionsFile).readText(Charsets.UTF_8))
-        for (session in sessions){
-            if (session.date == date){
-                if (session.places[place.toInt() - 1] == 0.toByte()){
-                    ++(session.places[place.toInt() - 1])
-                    var tickets = Json.decodeFromString<Array<Ticket>>(File(ticketsFile).readText(Charsets.UTF_8))
-                    tickets += (Ticket(generateId(), session.id, session.cost, place, date))
-                    File(ticketsFile).writeText(Json.encodeToString<Array<Ticket>>(tickets))
-                    return ("Билет куплен")
-                }
-                else{
-                    return "Место занято, выберите новое"
+        if (File(sessionsFile).exists()) {
+            val sessions = Json.decodeFromString<Array<Session>>(File(sessionsFile).readText(Charsets.UTF_8))
+            for (session in sessions) {
+                if (session.date == date) {
+                    if (session.places[place.toInt() - 1] == 0.toByte()) {
+                        ++(session.places[place.toInt() - 1])
+                        var tickets: Array<Ticket>
+                        if (File(ticketsFile).exists()) {
+                            tickets =
+                                Json.decodeFromString<Array<Ticket>>(File(ticketsFile).readText(Charsets.UTF_8))
+                            tickets += (Ticket(generateId(), session.id, session.cost, place, date))
+                        } else{
+                            val file = File(ticketsFile)
+                            file.createNewFile()
+                            tickets = arrayOf(Ticket(generateId(), session.id, session.cost, place, date))
+                        }
+                        File(ticketsFile).writeText(Json.encodeToString<Array<Ticket>>(tickets))
+                        return ("Билет куплен")
+                    } else {
+                        return "Место занято, выберите новое"
+                    }
                 }
             }
         }
         return ("Такого сеанса не существует. Воспользуйтесь функцией ещё раз с существующим сеансом")
     }
 
-    fun returnTicket(ticketId: String) : String { // Поправить работу с файлом
-        val tickets = Json.decodeFromString<Array<Ticket>>(File(ticketsFile).readText(Charsets.UTF_8)).toMutableList()
-        for (ticket in tickets){
-            if (ticket.id == ticketId){
-                tickets -= ticket
-                val ticketsArr = tickets.toTypedArray()
-                File(ticketsFile).writeText(Json.encodeToString<Array<Ticket>>(ticketsArr))
-                return "Билет возвращён"
+    fun returnTicket(ticketId: String) : String {
+        if (File(ticketsFile).exists()) {
+            val tickets =
+                Json.decodeFromString<Array<Ticket>>(File(ticketsFile).readText(Charsets.UTF_8)).toMutableList()
+            for (ticket in tickets) {
+                if (ticket.id == ticketId) {
+                    tickets -= ticket
+                    val ticketsArr = tickets.toTypedArray()
+                    File(ticketsFile).writeText(Json.encodeToString<Array<Ticket>>(ticketsArr))
+                    return "Билет возвращён"
+                }
             }
         }
         return ("Билета с данным ID не существует, повторите попытку с корректным билетом")
     }
 
-    fun tagVisitor(ticketId: String) : String { // Поправить работу с файлом
-        val tickets = Json.decodeFromString<Array<Ticket>>(File(ticketsFile).readText(Charsets.UTF_8))
-        for (ticket in tickets){
-            if (ticket.id == ticketId){
-                val sessionID = ticket.sessionId
-                val sessions = Json.decodeFromString<Array<Session>>(File(sessionsFile).readText(Charsets.UTF_8))
-                for (session in sessions){
-                    if (sessionID == session.id){
-                        val movieId = session.movieId
-                        val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
-                        for (movie in movies){
-                            if (movieId == movie.id){
-                                var dateStart = LocalDateTime.parse(session.date, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
-                                val dateEnd = dateStart.plusSeconds( movie.duration.toLong());
-                                dateStart = dateStart.minusMinutes(15)
-                                val currDate = LocalDateTime.now()
-                                if (currDate < dateStart) {
-                                    return "Отметка происходит за 15 минут до начала фильма. Попробуйте позже"
+    fun tagVisitor(ticketId: String) : String {
+        if (File(ticketsFile).exists()) {
+            val tickets = Json.decodeFromString<Array<Ticket>>(File(ticketsFile).readText(Charsets.UTF_8))
+            for (ticket in tickets) {
+                if (ticket.id == ticketId) {
+                    val sessionID = ticket.sessionId
+                    val sessions = Json.decodeFromString<Array<Session>>(File(sessionsFile).readText(Charsets.UTF_8))
+                    for (session in sessions) {
+                        if (sessionID == session.id) {
+                            val movieId = session.movieId
+                            val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
+                            for (movie in movies) {
+                                if (movieId == movie.id) {
+                                    var dateStart = LocalDateTime.parse(
+                                        session.date,
+                                        DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+                                    )
+                                    val dateEnd = dateStart.plusSeconds(movie.duration.toLong())
+                                    dateStart = dateStart.minusMinutes(15)
+                                    val currDate = LocalDateTime.now()
+                                    if (currDate < dateStart) {
+                                        return "Отметка происходит за 15 минут до начала фильма. Попробуйте позже"
+                                    }
+                                    if (currDate >= dateEnd)
+                                        return "Данный сеанс закончился, вы не успели."
                                 }
-                                if (currDate >= dateEnd)
-                                    return "Данный сеанс закончился, вы не успели."
+                                if (session.places[ticket.place.toInt() - 1] == 2.toByte()) {
+                                    return "Человек уже отмечен"
                                 }
-                            if(session.places[ticket.place.toInt() - 1] == 2.toByte()){
-                                return "Человек уже отмечен"
-                            }
-                            if(session.places[ticket.place.toInt() - 1] == 1.toByte()){
-                                return "Человек успешно отмечен"
+                                if (session.places[ticket.place.toInt() - 1] == 1.toByte()) {
+                                    return "Человек успешно отмечен"
+                                }
                             }
                         }
                     }
@@ -231,12 +279,12 @@ class System() {
         return ("Билета с данным ID не существует, повторите попытку с корректным билетом")
     }
 
-    fun showPlaces(date: String) : String { // Не работает
+    fun showPlaces(date: String) : String {
         if (File(sessionsFile).exists()) {
             val sessions = Json.decodeFromString<Array<Session>>(File(sessionsFile).readText(Charsets.UTF_8))
             for (session in sessions){
                 if (session.date.lowercase(Locale.getDefault()) == date.lowercase(Locale.getDefault())){
-                    return (session.toString() + "Свободные места: " + session.getPlaces())
+                    return (session.toString() + "Места:\n" + session.getPlaces())
                 }
             }
         }
@@ -244,19 +292,19 @@ class System() {
     }
 
     fun showSessionsByName(movieName: String) : String {
-        var Id = findMovie(movieName)
+        val id = findMovie(movieName)
         if (File(sessionsFile).exists()) {
             var result = ""
             val sessions = Json.decodeFromString<Array<Session>>(File(sessionsFile).readText(Charsets.UTF_8)).toMutableList()
             for (session in sessions){
-                if (session.movieId.lowercase(Locale.getDefault()) == Id.lowercase(Locale.getDefault())){
+                if (session.movieId.lowercase(Locale.getDefault()) == id.lowercase(Locale.getDefault())){
                     result += session.toString()
                 }
             }
             if (result != "") {
                 return result
             }
-            return "Пока что нет сеансов по фильму: " + movieName
+            return "Пока что нет сеансов по фильму: $movieName"
         }
         return "Пока что нет запланированных сессий!"
     }
@@ -273,17 +321,17 @@ class System() {
             if (result != "") {
                 return result
             }
-            return "Пока что нет сеансов в такую дату: " + date
+            return "Пока что нет сеансов в такую дату: $date"
         }
-        return "Пока что нет запланированных сессий!"
+        return "Пока что нет запланированных сеансов!"
     }
 
     fun showMovies() : String {
 
         if (File(moviesFile).exists()) {
-            var moviesString: String = ""
+            var moviesString = ""
             val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
-            var count: Int = 1
+            var count = 1
             for (movie in movies){
                 moviesString += ("${count}. ${movie.name}. Продолжительность показа: ${movie.duration / 60u}: ${movie.duration - movie.duration / 60u * 60u}\n" )
                 count += 1

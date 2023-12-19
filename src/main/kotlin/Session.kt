@@ -11,8 +11,14 @@ class Session(val id: String, var movieId: String, var date: String, var cost: U
     fun getPlaces() : String {
         var res = ""
         for (i in 0..99) {
-            if (places[i].toInt() > 0) {
-                res += (i+1).toString() + ", "
+            if (places[i].toInt() == 0) {
+                res += (i+1).toString() + ": свободно, "
+            }
+            else{
+                res += (i+1).toString() + ": занято, "
+            }
+            if ((i + 1).rem(10) == 0){
+                res += "\n"
             }
         }
         return res

@@ -1,8 +1,8 @@
 
 
-val moviesFile = "C:\\Users\\Cactus\\IdeaProjects\\HW1Movies\\src\\main\\resources\\data\\movies.json"
-val sessionsFile = "C:\\Users\\Cactus\\IdeaProjects\\HW1Movies\\src\\main\\resources\\data\\sessions.json"
-val ticketsFile = "C:\\Users\\Cactus\\IdeaProjects\\HW1Movies\\src\\main\\resources\\data\\tickets.json"
+val moviesFile = "src/main/resources/data/movies.json"
+val sessionsFile = "src/main/resources/data/sessions.json"
+val ticketsFile = "src/main/resources/data/tickets.json"
 
 var files = arrayOf(moviesFile, sessionsFile, ticketsFile)
 
