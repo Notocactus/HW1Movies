@@ -179,7 +179,7 @@ fun main() {
                     println("Пожалуйста введите корректную дату: ")
                     newDate = readln()
                 }
-                println(system.editSessionDate(sessionDate, newDate))
+                println(system.editSession(sessionDate, newDate))
             }
 
             "10" -> {
@@ -195,7 +195,7 @@ fun main() {
                     input = readln()
                 }
                 val cost = input.toUInt()
-                println(system.editSessionCost(sessionDate, cost))
+                println(system.editSession(sessionDate, cost))
             }
 
             "11" -> {

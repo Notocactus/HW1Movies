@@ -151,7 +151,7 @@ class System {
         return "Сеанс успешно добавлен."
     }
 
-    fun editSessionDate(date: String, newDate: String) : String {
+    fun editSession(date: String, newDate: String) : String {
         if (File(sessionsFile).exists()) {
             val sessions = Json.decodeFromString<Array<Session>>(File(sessionsFile).readText(Charsets.UTF_8))
             for (session in sessions){
@@ -165,7 +165,7 @@ class System {
         return "Сеанса с такой датой не существует!"
     }
 
-    fun editSessionCost(date: String, newCost: UInt) : String {
+    fun editSession(date: String, newCost: UInt) : String {
         if (File(sessionsFile).exists()) {
             val sessions = Json.decodeFromString<Array<Session>>(File(sessionsFile).readText(Charsets.UTF_8))
             for (session in sessions){
