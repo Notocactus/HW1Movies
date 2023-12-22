@@ -1,37 +1,25 @@
-
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import java.io.File
+import repositories.MoviesRepository
+import repositories.SessionsRepository
+import repositories.StaffRepository
+import repositories.TicketsRepository
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.util.*
 
 class System {
     private var countOfCreatedObjects: Int = 0
+    private val moviesRepository = MoviesRepository()
+    private val sessionsRepository = SessionsRepository()
+    private val ticketsRepository = TicketsRepository()
+    private val staffRepository = StaffRepository()
 
-    fun clearSessions(localDateTime: LocalDateTime){
-        if (File(sessionsFile).exists()){
-            var isChanged = false
-            val sessions = Json.decodeFromString<Array<Session>>(File(sessionsFile).readText(Charsets.UTF_8)).toMutableList()
-            for (session in sessions){
-                val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
-                for (movie in movies){
-                    if (movie.id == session.movieId){
-                        val endOfTheMovie = LocalDateTime.parse(session.date, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")).plusHours(
-                            (movie.duration / 60u).toLong()).plusMinutes((movie.duration - movie.duration / 60u).toLong())
-                        if (localDateTime > endOfTheMovie){
-                            sessions -= session
-                            isChanged = true
-                        }
-                        break
-                    }
-                }
-            }
-            if (isChanged){
-                val sessionsArr = sessions.toTypedArray()
-                File(sessionsFile).writeText(Json.encodeToString<Array<Session>>(sessionsArr))
-            }
-        }
+    fun enter(login: String, password: String): Boolean{
+        return staffRepository.enter(login, password)
+    }
+
+    fun register(login: String, password: String): Boolean{
+        return staffRepository.register(login, password)
+    }
+    fun clearSessions(localDateTime: LocalDateTime) {
+        sessionsRepository.clearSessions(moviesRepository.moviesArray,ticketsRepository, localDateTime)
     }
     private fun generateId(): String {
         return (LocalDateTime.now().year.toString() + LocalDateTime.now().monthValue.toString() +
@@ -41,304 +29,63 @@ class System {
 
     }
 
-    private fun findMovie(name: String) : String {
-        val movies: Array<Movie>
-        if (File(moviesFile).exists()){
-            movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
-            for (movie in movies){
-                if (movie.name.lowercase(Locale.getDefault()) == name.lowercase(Locale.getDefault())){
-                    return movie.id
-                }
-            }
-        }
-        return ""
-    }
-
     fun addMovie(name: String, duration: UInt) : String {
-        var movies: Array<Movie>
-        if (File(moviesFile).exists()){
-            movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
-            for (movie in movies){
-                if (movie.name.lowercase(Locale.getDefault()) == name.lowercase(Locale.getDefault())){
-                    return ("Такой фильм уже существует! Добавление отменено.")
-                }
-            }
-            movies += (Movie(generateId(), name, duration))
-        }
-        else{
-            val file = File(moviesFile)
-            file.createNewFile()
-            movies = arrayOf(Movie(generateId(), name, duration))
-        }
-        File(moviesFile).writeText(Json.encodeToString<Array<Movie>>(movies))
-        return "Фильм успешно добавлен."
+        return moviesRepository.addMovie(generateId(), name, duration)
     }
 
     fun editMovie(movieName: String, newName: String) : String {
-        if (File(moviesFile).exists()) {
-            val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
-            for (movie in movies){
-                if (movie.name.lowercase(Locale.getDefault()) == movieName.lowercase(Locale.getDefault())){
-                    movie.name = newName
-                    File(moviesFile).writeText(Json.encodeToString<Array<Movie>>(movies))
-                    return "Название фильма успешно изменено."
-                }
-            }
-        }
-        return "Фильма с таким названием не существует!"
+        return moviesRepository.editMovie(movieName, newName)
     }
 
     fun editMovie(movieName: String, duration: UInt): String{
-        if (File(moviesFile).exists()) {
-            val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
-            for (movie in movies){
-                if (movie.name.lowercase(Locale.getDefault()) == movieName.lowercase(Locale.getDefault())){
-                    movie.duration = duration
-                    File(moviesFile).writeText(Json.encodeToString<Array<Movie>>(movies))
-                    return "Продолжительность фильма успешно изменена."
-                }
-            }
-        }
-        return "Фильма с таким названием не существует!"
+        return moviesRepository.editMovie(sessionsRepository, ticketsRepository, movieName, duration)
     }
 
     fun removeMovie(name: String) : String {
-        if (File(moviesFile).exists()) {
-            val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8)).toMutableList()
-            for (movie in movies){
-                if (movie.name.lowercase(Locale.getDefault()) == name.lowercase(Locale.getDefault())){
-                    movies -= movie
-                    val moviesArr = movies.toTypedArray()
-                    File(moviesFile).writeText(Json.encodeToString<Array<Movie>>(moviesArr))
-                    return "Фильм успешно удалён из списка."
-                }
-            }
-        }
-        return "Фильма с таким названием не существует!"
+        return moviesRepository.removeMovie(sessionsRepository, ticketsRepository, name)
     }
 
     fun addSession(movieName: String, date: String, cost: UInt) : String {
-        val currMovieId = findMovie(movieName)
-        if (currMovieId == "") {
-            return ("В каталоге нет такого фильма.")
-        }
-        var sessions : Array<Session>
-        if (File(sessionsFile).exists()) {
-            sessions = Json.decodeFromString<Array<Session>>(File(moviesFile).readText(Charsets.UTF_8))
-            for (session in sessions){
-                val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
-                for (movie in movies){
-                    if (movie.id == session.movieId){
-                        val dateToLocalDateTime = LocalDateTime.parse(date, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
-                        val startOfTheMovie = LocalDateTime.parse(session.date, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
-                        val endOfTheMovie = startOfTheMovie.plusHours(
-                            (movie.duration / 60u).toLong()).plusMinutes((movie.duration - movie.duration / 60u).toLong())
-                        if (dateToLocalDateTime >= startOfTheMovie &&
-                            dateToLocalDateTime <= endOfTheMovie.plusMinutes(15L)){
-                            return "Это время уже занято."
-                        }
-                    }
-                }
-            }
-            sessions += (Session(generateId(), currMovieId, date, cost))
-        }
-        else {
-            val file = File(sessionsFile)
-            file.createNewFile()
-            sessions = arrayOf(Session(generateId(), currMovieId, date, cost))
-        }
-        File(sessionsFile).writeText(Json.encodeToString<Array<Session>>(sessions))
-        return "Сеанс успешно добавлен."
+        return  sessionsRepository.addSession(moviesRepository, generateId(), movieName, date, cost)
     }
 
     fun editSessionDate(date: String, newDate: String) : String {
-        if (File(sessionsFile).exists()) {
-            val sessions = Json.decodeFromString<Array<Session>>(File(sessionsFile).readText(Charsets.UTF_8))
-            for (session in sessions){
-                if (session.date.lowercase(Locale.getDefault()) == date.lowercase(Locale.getDefault())){
-                    session.date = newDate
-                    File(sessionsFile).writeText(Json.encodeToString<Array<Session>>(sessions))
-                    return "Дата и время сеанса успешно изменены."
-                }
-            }
-        }
-        return "Сеанса с такой датой не существует!"
+        return sessionsRepository.editSessionDate(ticketsRepository, date, newDate)
     }
 
     fun editSessionCost(date: String, newCost: UInt) : String {
-        if (File(sessionsFile).exists()) {
-            val sessions = Json.decodeFromString<Array<Session>>(File(sessionsFile).readText(Charsets.UTF_8))
-            for (session in sessions){
-                if (session.date.lowercase(Locale.getDefault()) == date.lowercase(Locale.getDefault())){
-                    session.cost = newCost
-                    File(sessionsFile).writeText(Json.encodeToString<Array<Session>>(sessions))
-                    return "Цена сеанса успешно изменена."
-                }
-            }
-        }
-        return "Сеанса с такой датой не существует!"
+        return sessionsRepository.editSessionCost(date, newCost)
     }
 
     fun removeSession(date: String) : String {
-        if (File(sessionsFile).exists()) {
-            val sessions = Json.decodeFromString<Array<Session>>(File(sessionsFile).readText(Charsets.UTF_8)).toMutableList()
-            for (session in sessions){
-                if (session.date.lowercase(Locale.getDefault()) == date.lowercase(Locale.getDefault())){
-                    sessions -= session
-                    val sessionsArr = sessions.toTypedArray()
-                    File(sessionsFile).writeText(Json.encodeToString<Array<Session>>(sessionsArr))
-                    return "Сеанс успешно удалён из списка."
-                }
-            }
-        }
-        return "Сеанса с такой датой не существует!"
+        return sessionsRepository.removeSession(ticketsRepository, date)
     }
 
     fun sellTicket(date: String, place: UInt): String{ // Надо исправить работу с файлом
-        if (File(sessionsFile).exists()) {
-            val sessions = Json.decodeFromString<Array<Session>>(File(sessionsFile).readText(Charsets.UTF_8))
-            for (session in sessions) {
-                if (session.date == date) {
-                    if (session.places[place.toInt() - 1] == 0.toByte()) {
-                        ++(session.places[place.toInt() - 1])
-                        var tickets: Array<Ticket>
-                        if (File(ticketsFile).exists()) {
-                            tickets =
-                                Json.decodeFromString<Array<Ticket>>(File(ticketsFile).readText(Charsets.UTF_8))
-                            tickets += (Ticket(generateId(), session.id, session.cost, place, date))
-                        } else{
-                            val file = File(ticketsFile)
-                            file.createNewFile()
-                            tickets = arrayOf(Ticket(generateId(), session.id, session.cost, place, date))
-                        }
-                        File(ticketsFile).writeText(Json.encodeToString<Array<Ticket>>(tickets))
-                        return ("Билет куплен")
-                    } else {
-                        return "Место занято, выберите новое"
-                    }
-                }
-            }
-        }
-        return ("Такого сеанса не существует. Воспользуйтесь функцией ещё раз с существующим сеансом")
+        return ticketsRepository.sellTicket(sessionsRepository, generateId(), date, place)
     }
 
     fun returnTicket(ticketId: String) : String {
-        if (File(ticketsFile).exists()) {
-            val tickets =
-                Json.decodeFromString<Array<Ticket>>(File(ticketsFile).readText(Charsets.UTF_8)).toMutableList()
-            for (ticket in tickets) {
-                if (ticket.id == ticketId) {
-                    tickets -= ticket
-                    val ticketsArr = tickets.toTypedArray()
-                    File(ticketsFile).writeText(Json.encodeToString<Array<Ticket>>(ticketsArr))
-                    return "Билет возвращён"
-                }
-            }
-        }
-        return ("Билета с данным ID не существует, повторите попытку с корректным билетом")
+        return ticketsRepository.returnTicket(ticketId)
     }
 
     fun tagVisitor(ticketId: String) : String {
-        if (File(ticketsFile).exists()) {
-            val tickets = Json.decodeFromString<Array<Ticket>>(File(ticketsFile).readText(Charsets.UTF_8))
-            for (ticket in tickets) {
-                if (ticket.id == ticketId) {
-                    val sessionID = ticket.sessionId
-                    val sessions = Json.decodeFromString<Array<Session>>(File(sessionsFile).readText(Charsets.UTF_8))
-                    for (session in sessions) {
-                        if (sessionID == session.id) {
-                            val movieId = session.movieId
-                            val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
-                            for (movie in movies) {
-                                if (movieId == movie.id) {
-                                    var dateStart = LocalDateTime.parse(
-                                        session.date,
-                                        DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
-                                    )
-                                    val dateEnd = dateStart.plusSeconds(movie.duration.toLong())
-                                    dateStart = dateStart.minusMinutes(15)
-                                    val currDate = LocalDateTime.now()
-                                    if (currDate < dateStart) {
-                                        return "Отметка происходит за 15 минут до начала фильма. Попробуйте позже"
-                                    }
-                                    if (currDate >= dateEnd)
-                                        return "Данный сеанс закончился, вы не успели."
-                                }
-                                if (session.places[ticket.place.toInt() - 1] == 2.toByte()) {
-                                    return "Человек уже отмечен"
-                                }
-                                if (session.places[ticket.place.toInt() - 1] == 1.toByte()) {
-                                    return "Человек успешно отмечен"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return ("Билета с данным ID не существует, повторите попытку с корректным билетом")
+       return ticketsRepository.tagVisitor(moviesRepository.moviesArray, sessionsRepository, ticketId)
     }
 
     fun showPlaces(date: String) : String {
-        if (File(sessionsFile).exists()) {
-            val sessions = Json.decodeFromString<Array<Session>>(File(sessionsFile).readText(Charsets.UTF_8))
-            for (session in sessions){
-                if (session.date.lowercase(Locale.getDefault()) == date.lowercase(Locale.getDefault())){
-                    return (session.toString() + "Места:\n" + session.getPlaces())
-                }
-            }
-        }
-        return "Сеанса с такой датой не существует!"
+        return sessionsRepository.showPlaces(moviesRepository.moviesArray, date)
     }
 
     fun showSessionsByName(movieName: String) : String {
-        val id = findMovie(movieName)
-        if (File(sessionsFile).exists()) {
-            var result = ""
-            val sessions = Json.decodeFromString<Array<Session>>(File(sessionsFile).readText(Charsets.UTF_8)).toMutableList()
-            for (session in sessions){
-                if (session.movieId.lowercase(Locale.getDefault()) == id.lowercase(Locale.getDefault())){
-                    result += session.toString()
-                }
-            }
-            if (result != "") {
-                return result
-            }
-            return "Пока что нет сеансов по фильму: $movieName"
-        }
-        return "Пока что нет запланированных сессий!"
+        return sessionsRepository.showSessionsByName(moviesRepository, movieName)
     }
 
     fun showSessionsByDate(date: String) : String {
-        if (File(sessionsFile).exists()) {
-            var result = ""
-            val sessions = Json.decodeFromString<Array<Session>>(File(sessionsFile).readText(Charsets.UTF_8)).toMutableList()
-            for (session in sessions){
-                if (session.date.lowercase(Locale.getDefault()) == date.lowercase(Locale.getDefault())){
-                    result += session.toString()
-                }
-            }
-            if (result != "") {
-                return result
-            }
-            return "Пока что нет сеансов в такую дату: $date"
-        }
-        return "Пока что нет запланированных сеансов!"
+        return sessionsRepository.showSessionsByDate(date)
     }
 
     fun showMovies() : String {
-
-        if (File(moviesFile).exists()) {
-            var moviesString = ""
-            val movies = Json.decodeFromString<Array<Movie>>(File(moviesFile).readText(Charsets.UTF_8))
-            var count = 1
-            for (movie in movies){
-                moviesString += ("${count}. ${movie.name}. Продолжительность показа: ${movie.duration / 60u}: ${movie.duration - movie.duration / 60u * 60u}\n" )
-                count += 1
-            }
-            return moviesString
-        } else {
-            return "There are no movies yet. "
-        }
+        return moviesRepository.showMovies()
     }
 }

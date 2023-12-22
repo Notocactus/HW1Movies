@@ -1,64 +1,55 @@
-package org.example
-
-import System
-import menu
-import java.io.File
-import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 
-
-fun isDateValid(date: String?): Boolean {
-    val myFormat = SimpleDateFormat("dd/MM/yyyy HH:mm")
-    myFormat.isLenient = false
-    try {
-        myFormat.parse(date)
-        return true
-    } catch (e: Exception) {
-        return false
-    }
-}
-
-fun isDurationValid(input : String?): Boolean {
-    val myFormat = SimpleDateFormat("HH:mm")
-    myFormat.isLenient = false
-    try {
-        myFormat.parse(input)
-        return true
-    } catch (e: Exception) {
-        return false
-    }
-}
-
-fun isUInt(input : String?): Boolean {
-    try {
-        var uInt : UInt = input!!.toUInt()
-        return true
-    } catch (e: NumberFormatException) {
-        return false
-    }
-}
-
-fun CheckCreate(files: Array<String>) {
-    for (item in files) {
-        var file = File(item)
-        file.createNewFile()
-    }
-}
-
 fun main() {
-
-//    CheckCreate(files)
-
-    val system: System = System()
-
-    var command : String = ""
+    val system = System()
+    var isEnter = false
+    println(authoMenu)
+    var command: String
+    while (!isEnter){
+        println(authoMenu)
+        command = readln()
+        when (command){
+            "0" -> return
+            "1" ->{
+                println("Введите логин: ")
+                val login = readln()
+                println("Введите пароль: ")
+                val password = readln()
+                if (system.enter(login, password)){
+                    println("Авторизация прошла успешно")
+                    isEnter = true
+                }
+                else{
+                    println("Пользователя с подобными данными не существует")
+                }
+            }
+            "2" ->{
+                println("Введите логин: ")
+                val login = readln()
+                println("Введите пароль: ")
+                val password = readln()
+                if (system.register(login, password)){
+                    println("Регистрация прошла успешно")
+                    isEnter = true
+                }
+                else{
+                    println("Пользователь с такими данными уже существует")
+                }
+            }
+            else -> {
+                println("\nВведена неверная команда. Пожалуйста, выберите одну из представленных вариантов. " +
+                        "\nНажмите Enter чтобы вернуться к меню. ")
+                readln()
+            }
+        }
+    }
     while (true) {
         system.clearSessions(LocalDateTime.now())
 
         println(menu)
         command = readln()
         when (command) {
-            "0" -> break
+            "0" -> return
 
             "1" -> {
                 println("Введите дату и время сеанса (DD/MM/YYYY HH:MM): ")
@@ -87,50 +78,38 @@ fun main() {
 
             "2" -> {
                 println("Введите id билета, который хотите вернуть: ")
-                var input : String = readln()
-                while (!isUInt(input)) {
-                    println("Введите корректное id: ")
-                    input = readln()
-                }
-                var ticketId = input
-                println(system.returnTicket(ticketId))
+                println(system.returnTicket(readln()))
             }
 
             "3" -> {
                 println("Введите id билета посетителя: ")
-                var input : String = readln()
-                while (!isUInt(input)) {
-                    println("Введите корректное id: ")
-                    input = readln()
-                }
-                var ticketId = input
-                println(system.tagVisitor(ticketId))
+                println(system.tagVisitor(readln()))
             }
 
             "4" -> {
                 println("Введите название фильма: ")
-                var movieName : String = readln()
+                val movieName : String = readln()
                 println("Введите длительность фильма в минутах: ")
                 var input : String = readln()
                 while (!isUInt(input)) {
                     println("Введите корректную длительность фильма в минутах: ")
                     input = readln()
                 }
-                var duration : UInt = input.toUInt()
+                val duration : UInt = input.toUInt()
                 println(system.addMovie(movieName, duration))
             }
 
             "5" -> {
                 println("Введите название фильма, который хотите изменить: ")
-                var movieName : String = readln()
+                val movieName : String = readln()
                 println("Введите новое название фильма: ")
-                var newName = readln()
+                val newName = readln()
                 println(system.editMovie(movieName, newName))
             }
 
             "6" -> {
                 println("Введите название фильма, который хотите изменить: ")
-                var movieName : String = readln()
+                val movieName : String = readln()
                 println("Введите новую длительность фильма: ")
                 var input = readln()
                 while (!isDurationValid(input) && !isUInt(input)) {
@@ -143,13 +122,13 @@ fun main() {
 
             "7" -> {
                 println("Введите название фильма, который хотите удалить: ")
-                var movieName : String = readln()
+                val movieName : String = readln()
                 println(system.removeMovie(movieName))
             }
 
             "8" -> {
                 println("Введите название фильма: ")
-                var movieName : String = readln()
+                val movieName : String = readln()
                 println("Введите дату и время сеанса (DD/MM/YYYY HH:MM): ")
                 var sessionDate : String = readln()
                 while (!isDateValid(sessionDate)) {
@@ -189,6 +168,7 @@ fun main() {
                     println("Пожалуйста введите корректную дату: ")
                     sessionDate = readln()
                 }
+                println("Введите цену: ")
                 var input = readln()
                 while (!isUInt(input)) {
                     println("Введите верную цену: ")
@@ -220,7 +200,7 @@ fun main() {
 
             "13" -> {
                 println("Введите название фильма: ")
-                var movieName : String = readln()
+                val movieName : String = readln()
                 println(system.showSessionsByName(movieName))
             }
 
@@ -243,7 +223,6 @@ fun main() {
                 println("\nВведена неверная команда. Пожалуйста, выберите одну из представленных вариантов. " +
                         "\nНажмите Enter чтобы вернуться к меню. ")
                 readln()
-//                Thread.sleep(750)
             }
         }
     }
