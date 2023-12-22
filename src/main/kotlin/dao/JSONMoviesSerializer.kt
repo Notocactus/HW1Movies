@@ -7,6 +7,9 @@ import java.io.File
 
 class JSONMoviesSerializer {
     fun jsonSerialize(path: String, array: Array<Movie>) {
+        if (!File(path).exists()){
+            File(path).createNewFile()
+        }
         File(path).writeText(Json.encodeToString<Array<Movie>>(array))
     }
     fun jsonDeserialize(path: String): Array<Movie>?{

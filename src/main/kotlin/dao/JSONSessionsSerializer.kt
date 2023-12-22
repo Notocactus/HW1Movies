@@ -7,6 +7,9 @@ import java.io.File
 
 class JSONSessionsSerializer {
     fun jsonSerialize(path: String, array: Array<Session>) {
+        if (!File(path).exists()){
+            File(path).createNewFile()
+        }
         File(path).writeText(Json.encodeToString<Array<Session>>(array))
     }
 

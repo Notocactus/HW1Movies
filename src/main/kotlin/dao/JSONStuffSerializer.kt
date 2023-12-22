@@ -7,6 +7,9 @@ import java.io.File
 
 class JSONStuffSerializer {
     fun jsonSerialize(path: String, array: Array<Staff>) {
+        if (!File(path).exists()){
+            File(path).createNewFile()
+        }
         File(path).writeText(Json.encodeToString<Array<Staff>>(array))
     }
 

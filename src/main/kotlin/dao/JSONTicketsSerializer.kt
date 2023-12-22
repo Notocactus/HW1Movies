@@ -7,6 +7,9 @@ import java.io.File
 
 class JSONTicketsSerializer {
     fun jsonSerialize(path: String, array: Array<Ticket>) {
+        if (!File(path).exists()){
+            File(path).createNewFile()
+        }
         File(path).writeText(Json.encodeToString<Array<Ticket>>(array))
     }
 

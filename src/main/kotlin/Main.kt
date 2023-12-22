@@ -3,7 +3,6 @@ import java.time.LocalDateTime
 fun main() {
     val system = System()
     var isEnter = false
-    println(authoMenu)
     var command: String
     while (!isEnter){
         println(authoMenu)
@@ -25,9 +24,23 @@ fun main() {
             }
             "2" ->{
                 println("Введите логин: ")
-                val login = readln()
+                var login = readln()
                 println("Введите пароль: ")
-                val password = readln()
+                var password = readln()
+                var isCorrect = true
+                if (login == "" || login == "\n" || login == "\t" || password == "" || password == "\n" || password == "\t"){
+                    isCorrect = false
+                }
+                while(!isCorrect){
+                    println("Каждое поле не должно представлять из себя пустую строку, Enter или Tab")
+                    println("Введите корректный логин: ")
+                    login = readln()
+                    println("Введите корректный пароль: ")
+                    password = readln()
+                    if (login != "" && login != "\n" && login != "\t" && password != "" && password != "\n" && password != "\t"){
+                        isCorrect = true
+                    }
+                }
                 if (system.register(login, password)){
                     println("Регистрация прошла успешно")
                     isEnter = true
@@ -65,7 +78,7 @@ fun main() {
                 while (true) {
                     if (isUInt(place)) {
                         placeNum = place.toUInt()
-                        if (placeNum > 1u && placeNum <= 100u) {
+                        if (placeNum in 1u..100u) {
                             break
                         }
                     }
